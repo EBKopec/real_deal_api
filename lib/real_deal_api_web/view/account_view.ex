@@ -10,6 +10,10 @@ defmodule RealDealApiWeb.AccountView do
     %{data: render_one(account, AccountView, "account.json")}
   end
 
+  def render("account_with_token.json", %{account: account, token: token}) do
+    %{data: render_one(account, AccountView, "account_token.json", %{token: token})}
+  end
+
   def render("account.json", %{account: account}) do
     %{
       id: account.id,

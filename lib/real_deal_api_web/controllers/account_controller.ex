@@ -1,7 +1,7 @@
 defmodule RealDealApiWeb.AccountController do
   use RealDealApiWeb, :controller
 
-  alias RealDealApiWeb.Auth.Guardian
+  alias RealDealApiWeb.{Auth.Guardian, Auth.ErrorResponse}
   alias RealDealApi.{Accounts, Accounts.Account, Users, Users.User}
 
   action_fallback RealDealApiWeb.FallbackController
@@ -21,6 +21,17 @@ defmodule RealDealApiWeb.AccountController do
       #  Pay attention to ensures that Phoenix uses RealDealApiWeb.AccountView instead of looking for RealDealApiWeb.AccountJSON.
       |> put_view(RealDealApiWeb.AccountView)  # Explicitly set the view module
       |> render(:show, account: account)
+    end
+  end
+
+  def sign_in(conn, %{"email" => email, "hash_password" => hash_password}) do
+    case Guardian.authenticate(email, hash_password) do
+      {:ok, account, token} ->
+        conn
+        |> put_status(:ok)
+        |> put_view(RealDealApiWeb.AccountView)
+        |> render(:account_with_token, %{account: account, token: token})
+      {:error, :unauthorized} -> raise ErrorResponse.Unauthorized, message: "Email or Password incorrect."
     end
   end
 
